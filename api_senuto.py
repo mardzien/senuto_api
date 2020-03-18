@@ -1,5 +1,6 @@
 import requests
 import json
+from user_data import auth
 
 urls = {
     "auth": "https://api.senuto.com//api/users/token.json",
@@ -16,34 +17,36 @@ urls = {
 }
 
 
-def get_token():
-    login_data = {'email': 'monitoring@vestigio.pl', 'password': 'xDDD'}
-    r = requests.post(urls['auth'], data=login_data)
-    # loading json users data for token
-    user_data = json.loads(r.text)
-    # getting token
-    token = user_data['data']['token']
-    return token
-
-
 header = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "Authorization": f"Bearer {get_token()}"
+    "Authorization": f"Bearer {auth.get_token()}"
 }
 
 
-def get_domain_statistics(domain):
+def get_domain_statistics(domain, fetch_mode="subdomain"):
     domain_statistics = requests.get(urls['getDomainStatistics'], headers=header,
-                                     params={'domain': domain, "fetch_mode": "subdomain"})
+                                     params={'domain': domain, "fetch_mode": fetch_mode})
 
     domain_data = json.loads(domain_statistics.text)
     statistics = ['top3', 'top10', 'top50', 'visibility', 'visibility_no_brand']
     statistics_dict = {'domain': domain}
-    for i, element in enumerate(statistics, 0):
+    for element in statistics:
         value = domain_data['data']['statistics'][element]['recent_value']
         statistics_dict[element] = value
     return statistics_dict
 
+
+def get_top_level_domain_statistics(domain):
+    domain_statistics = requests.get(urls['getDomainStatistics'], headers=header,
+                                     params={'domain': domain, "fetch_mode": "topLevelDomain"})
+
+    domain_data = json.loads(domain_statistics.text)
+    statistics = ['top3', 'top10', 'top50', 'visibility', 'visibility_no_brand']
+    statistics_dict = {'domain': domain}
+    for element in statistics:
+        value = domain_data['data']['statistics'][element]['recent_value']
+        statistics_dict[element] = value
+    return statistics_dict
 
 def get_top_competitors(number_of_competitors, domain):
     competitors = requests.post(urls['getTopCompetitors'], headers=header,
@@ -92,19 +95,6 @@ def get_positions_history_chart_data(domain, date_min, date_max, competitors=[])
     return positions_history_data
 
 
-# print(get_domain_statistics('zdrowie.tvn.pl'))
-
-def get_get_domain_statistics(domain):
-    domain_statistics = requests.get(urls['getDomainStatistics'], headers=header,
-                                     params={'domain': domain, "fetch_mode": "subdomain"})
-
-    domain_data = json.loads(domain_statistics.text)
-    statistics = ['top3', 'top10', 'top50', 'visibility', 'visibility_no_brand']
-    statistics_dict = {'domain': domain}
-    print(domain_statistics)
-    print(domain_data)
-
-
 def get_keyword_statistics(keyword):
     keyword_statistics = requests.get(urls['getKeywordStatistics'], headers=header,
                                       params={"country_id": "1", "keyword": keyword})
@@ -117,3 +107,6 @@ def get_keyword_statistics(keyword):
     except:
         keyword_dict["searches"] = 0
     return keyword_dict
+
+
+print(get_top_level_domain_statistics("zdrowie.tvn.pl"))

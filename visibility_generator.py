@@ -23,14 +23,15 @@ def generate_domain_statistics(*domains):
         sheet[f"{column}1"] = column_names[i]
 
     for i, domain in enumerate(domains):
-        statistics_dict = get_domain_statistics(domain)
+        try:
+            statistics_dict = get_domain_statistics(domain)
+        except:
+            statistics_dict = get_domain_statistics(domain, fetch_mode="topLevelDomain")
         for j, column in enumerate(columns):
-            sheet[f"{column}{i+2}"] = statistics_dict[column_names[j]]
+            sheet[f"{column}{i + 2}"] = statistics_dict[column_names[j]]
 
-    workbook.save("data.xlsx")
+    workbook.save("data/data.xlsx")
 
 
 domain_list = get_domains_from_file('data/plik.txt')
-print(*domain_list)
-lista = ['hellozdrowie.pl']
-generate_domain_statistics(*lista)
+generate_domain_statistics(*domain_list)
