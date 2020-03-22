@@ -150,3 +150,9 @@ def get_keyword_statistics(keyword):
     except:
         keyword_dict["searches"] = 0
     return keyword_dict
+
+
+###
+# https://api.senuto.com/api/visibility_analysis/reports/domain_keywords/getImportantKeywords
+# może z tego endpointa uda się wyciągnąć listę fraz utraconych i pozyskanych
+###

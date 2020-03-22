@@ -33,5 +33,5 @@ def generate_domain_statistics(*domains):
     workbook.save("data/data.xlsx")
 
 
-domain_list = get_top_competitors('izielnik.pl', 5)
+domain_list = get_domains_from_file("data/plik.txt")
 generate_domain_statistics(*domain_list)
