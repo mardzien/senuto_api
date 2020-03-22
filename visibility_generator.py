@@ -1,5 +1,5 @@
 import openpyxl
-from api_senuto import get_domain_statistics
+from api_senuto import get_domain_statistics, get_top_competitors
 
 
 def get_domains_from_file(file_name):
@@ -33,5 +33,5 @@ def generate_domain_statistics(*domains):
     workbook.save("data/data.xlsx")
 
 
-domain_list = get_domains_from_file('data/plik.txt')
+domain_list = get_top_competitors('izielnik.pl', 5)
 generate_domain_statistics(*domain_list)

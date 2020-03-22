@@ -3,22 +3,27 @@ import json
 from user_data import auth
 
 urls = {
-    "auth": "https://api.senuto.com//api/users/token.json",
-    "getDomainStatistics": "https://api.senuto.com/api/visibility_analysis/reports/dashboard/getDomainStatistics",
-    "getTopCompetitors": "https://api.senuto.com/api/visibility_analysis/reports/domain_competitors/getTopCompetitors",
+    "auth":
+        "https://api.senuto.com//api/users/token.json",
+    "getDomainStatistics":
+        "https://api.senuto.com/api/visibility_analysis/reports/dashboard/getDomainStatistics",
+    "getTopCompetitors":
+        "https://api.senuto.com/api/visibility_analysis/reports/domain_competitors/getTopCompetitors",
     "getImportantKeywords":
         "https://api.senuto.com/api/visibility_analysis/reports/domain_keywords/getImportantKeywords",
     "getPositionsHistoryChartData":
         "https://api.senuto.com/api/visibility_analysis/reports/domain_positions/getPositionsHistoryChartData",
     "getKeywordsWithDecreasedPositions":
         "https://api.senuto.com/api/visibility_analysis/reports/domain_keywords/getKeywordsWithDecreasedPositions",
+    "getKeywordsWithIncreasedPositions":
+        "https://api.senuto.com/api/visibility_analysis/reports/domain_keywords/getKeywordsWithIncreasedPositions",
     "getKeywordStatistics":
         "https://api.senuto.com/api/keywords_analysis/reports/keyword_details/getStatistics"
 }
 
 
 header = {
-    "Content-Type": "application/x-www-form-urlencoded",
+    # "Content-Type": "application/x-www-form-urlencoded",
     "Authorization": f"Bearer {auth.get_token()}"
 }
 
@@ -36,19 +41,7 @@ def get_domain_statistics(domain, fetch_mode="subdomain"):
     return statistics_dict
 
 
-def get_top_level_domain_statistics(domain):
-    domain_statistics = requests.get(urls['getDomainStatistics'], headers=header,
-                                     params={'domain': domain, "fetch_mode": "topLevelDomain"})
-
-    domain_data = json.loads(domain_statistics.text)
-    statistics = ['top3', 'top10', 'top50', 'visibility', 'visibility_no_brand']
-    statistics_dict = {'domain': domain}
-    for element in statistics:
-        value = domain_data['data']['statistics'][element]['recent_value']
-        statistics_dict[element] = value
-    return statistics_dict
-
-def get_top_competitors(number_of_competitors, domain):
+def get_top_competitors(domain, number_of_competitors=10):
     competitors = requests.post(urls['getTopCompetitors'], headers=header,
                                 data={"fetch_mode": "subdomain", "domain": domain, "limit": number_of_competitors})
     competitors_data = json.loads(competitors.text)
@@ -71,16 +64,66 @@ def get_important_keywords(domain):
     return list_of_keywords
 
 
-def get_keywords_with_decreased_positions(domain, limit=50):
-    keywords_with_decreased_positions = requests.get(urls['getKeywordsWithDecreasedPositions'], headers=header,
-                                                     params={'domain': domain, "fetch_mode": "subdomain",
-                                                             'limit': limit})
-    keywords_data = json.loads(keywords_with_decreased_positions.text)
-    #################
-    ### To nie działa, wypluwa: 'params': {'domain': {'_required': 'This field is required'},
-    ###'fetch_mode': {'_required': 'This field is required'}}}}
-    #################
+# błędna metoda w dokumentacji! jest get, zamiast post
+def get_keywords_with_decreased_positions(domain, dates: list, limit=10):
+    """
+    :param domain:
+    :param dates: supposed to be in format: "YYYY-MM-01"
+    :param limit:
+    :return:
+    """
+    accumulated_data = []
+    page_index = 1
+    while True:
+        keywords_with_decreased_positions = requests.post(urls['getKeywordsWithDecreasedPositions'], headers=header,
+                                                          data={'domain': domain, "fetch_mode": "subdomain",
+                                                                'limit': limit, 'page': page_index,
+                                                                'order': {'dir': 'asc', 'prop': 'searches'}})
+        keywords_data = json.loads(keywords_with_decreased_positions.text)
+        # print(keywords_data)
+        try:
+            accumulated_data.extend(keywords_data['data'])
+        except KeyError as exc:
+            print(f"""Problem with extracting data for {urls['getKeywordsWithDecreasedPositions']}.
+                  Domain: {domain}, page index: {page_index}""")
+            raise exc
+        # break
+        if keywords_data.get('pagination', {}).get('has_next_page'):
+            page_index += 1
+        elif keywords_data.get('pagination', {}).get('page_count') == page_index:
+            break
+        else:
+            break
+
+    # post processing of server data
+    print(accumulated_data)
+    result = []
+    for keyword_data in accumulated_data:
+        all_monthly_positions = keyword_data.get("monthly_positions", {})
+        monthly_positions = {date: all_monthly_positions[date] for date in dates if date in all_monthly_positions}
+
+        processed_dict = {
+            "keyword": keyword_data["keyword"],
+            "monthly_positions": monthly_positions
+        }
+        result.append(processed_dict)
+
+    return result
+
+
+# zmienna = get_keywords_with_decreased_positions("optibuy.com", dates=["2020-01-01", "2020-02-01"])
+# print(len(zmienna))
+
+
+def get_keywords_with_increased_positions(domain, limit=10):
+    keywords_with_increased_positions = requests.post(urls['getKeywordsWithIncreasedPositions'], headers=header,
+                                                     data={"domain": domain, "fetch_mode": "topLevelDomain",
+                                                             "limit": 50})
+    keywords_data = json.loads(keywords_with_increased_positions.text)
+
     return keywords_data
+
+
 
 
 def get_positions_history_chart_data(domain, date_min, date_max, competitors=[]):
@@ -107,6 +150,3 @@ def get_keyword_statistics(keyword):
     except:
         keyword_dict["searches"] = 0
     return keyword_dict
-
-
-print(get_top_level_domain_statistics("zdrowie.tvn.pl"))
