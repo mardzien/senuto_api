@@ -1,8 +1,13 @@
 import openpyxl
+### pip install openpyxl
 from api_senuto import get_domain_statistics, get_top_competitors
 
 
 def get_domains_from_file(file_name):
+    """
+    :param file_name: plik powinien zawierać nazwy domen- każda domena w nowej linii
+    :return: lista domen
+    """
     domain_list = []
     with open(file_name, encoding="utf-8") as file:
         for line in file.read().splitlines():
@@ -10,10 +15,7 @@ def get_domains_from_file(file_name):
     return domain_list
 
 
-# domain_list = ['medjol.pl', 'wapteka.pl', 'medifem.pl']
-
-
-def generate_domain_statistics(*domains):
+def generate_domain_statistics(domains, name):
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     columns = "ABCDE"
@@ -26,12 +28,20 @@ def generate_domain_statistics(*domains):
         try:
             statistics_dict = get_domain_statistics(domain)
         except:
-            statistics_dict = get_domain_statistics(domain, fetch_mode="topLevelDomain")
+            try:
+                statistics_dict = get_domain_statistics(domain, fetch_mode="topLevelDomain")
+            except:
+                statistics_dict = {'domain': domain, 'top3': 0, 'top10': 0, 'top50': 0, 'visibility': 0}
         for j, column in enumerate(columns):
             sheet[f"{column}{i + 2}"] = statistics_dict[column_names[j]]
 
-    workbook.save("data/data.xlsx")
+    ### Nazwa pliku w folderze data
+    workbook.save(f"data/{name}.xlsx")
 
 
-domain_list = get_domains_from_file("data/plik.txt")
-generate_domain_statistics(*domain_list)
+### załadowanie pliku do listy
+domain_list = get_domains_from_file("data/domains.txt")
+# domain_list = get_top_competitors("izielnik.pl", 10)
+### generowanie pliku ze statystykami
+print(domain_list)
+generate_domain_statistics(domain_list, "izielnik_competitors")
