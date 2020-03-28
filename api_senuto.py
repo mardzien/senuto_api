@@ -66,14 +66,13 @@ def get_important_keywords(domain):
     return list_of_keywords
 
 
-def get_important_keywords(domain, limit=100):
+def get_important_keywords(domain, limit=11436):
     accumulated_data = []
     page_index = 1
     while True:
         important_keywords = requests.post(urls['getImportantKeywords'], headers=header,
                                            data={'domain': domain, "fetch_mode": "subdomain",
-                                                 'limit': limit, 'page': page_index,
-                                                 'order': {'dir': 'asc', 'prop': 'searches'}})
+                                                 'limit': limit, 'page': page_index})
         keywords_data = json.loads(important_keywords.text)
         # print(keywords_data)
         try:
@@ -104,11 +103,6 @@ def get_important_keywords(domain, limit=100):
             "position_yesterday": data["position_yesterday"],
         }
         result.append(processed_dict)
-
-    return result
-
-
-# print(get_important_keywords("optibuy.com"))
 
 
 # błędna metoda w dokumentacji! jest get, zamiast post
