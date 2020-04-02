@@ -21,6 +21,11 @@ urls = {
         "https://api.senuto.com/api/keywords_analysis/reports/keyword_details/getStatistics",
 }
 
+exports = {
+    "getDomainKeywords":
+        "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getImportantKeywords",
+}
+
 
 header = {
     # "Content-Type": "application/x-www-form-urlencoded",
@@ -52,18 +57,18 @@ def get_top_competitors(domain, number_of_competitors=10):
         list_of_competitors.append(competitor)
     return list_of_competitors
 
+
 print(get_top_competitors('izielnik.pl'))
 
-def get_important_keywords(domain):
-    keywords = requests.post(urls['getImportantKeywords'], headers=header,
-                             data={"fetch_mode": "subdomain", "domain": domain})
-    keywords_data = json.loads(keywords.text)
-    count_keywords = len(keywords_data['data'])
-    list_of_keywords = []
-    for i in range(count_keywords):
-        keyword = keywords_data['data'][i]['keyword']
-        list_of_keywords.append(keyword)
-    return list_of_keywords
+
+def get_important_keywords_export(domain, file_path):
+    data = requests.post(exports['getDomainKeywords'], headers=header,
+                                 data={'domain': domain, "fetch_mode": "subdomain"})
+    text = json.loads(data.text)
+    url = text['data']['downloadUrl']
+    download = requests.get(url)
+    with open(f'{file_path}/{domain}_keywords.xlsx', 'wb') as fh:
+        fh.write(download.content)
 
 
 def get_important_keywords(domain, limit=11436):
@@ -103,6 +108,10 @@ def get_important_keywords(domain, limit=11436):
             "position_yesterday": data["position_yesterday"],
         }
         result.append(processed_dict)
+    print(processed_dict)
+    
+
+# get_important_keywords('izielnik.pl')
 
 
 # błędna metoda w dokumentacji! jest get, zamiast post
