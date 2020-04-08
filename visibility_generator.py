@@ -40,8 +40,8 @@ def generate_domain_statistics(domains, name):
 
 
 ### załadowanie pliku do listy
-domain_list = get_domains_from_file("data/domains.txt")
-# domain_list = get_top_competitors("izielnik.pl", 10)
+# domain_list = get_domains_from_file("data/domains.txt")
+domain_list = get_top_competitors("medjol.pl", 11)
 ### generowanie pliku ze statystykami
 print(domain_list)
-generate_domain_statistics(domain_list, "izielnik_competitors")
+generate_domain_statistics(domain_list, "medjol_competitors")

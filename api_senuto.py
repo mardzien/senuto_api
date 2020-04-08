@@ -24,11 +24,12 @@ urls = {
 exports = {
     "getDomainKeywords":
         "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getImportantKeywords",
+    "getKeywordsWithDecreasedPositions":
+        "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getKeywordsWithDecreasedPositions",
 }
 
 
 header = {
-    # "Content-Type": "application/x-www-form-urlencoded",
     "Authorization": f"Bearer {auth.get_token()}"
 }
 
@@ -58,12 +59,9 @@ def get_top_competitors(domain, number_of_competitors=10):
     return list_of_competitors
 
 
-print(get_top_competitors('izielnik.pl'))
-
-
 def get_important_keywords_export(domain, file_path):
     data = requests.post(exports['getDomainKeywords'], headers=header,
-                                 data={'domain': domain, "fetch_mode": "subdomain"})
+                         data={'domain': domain, "fetch_mode": "subdomain"})
     text = json.loads(data.text)
     url = text['data']['downloadUrl']
     download = requests.get(url)
