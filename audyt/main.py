@@ -17,6 +17,7 @@ Słowa kluczowe, które wypadły z TOP10 to:
 """
 import api_senuto
 import datetime
+import pandas
 
 
 domain = "medjol.pl"
@@ -24,7 +25,7 @@ domain = "medjol.pl"
 
 def get_date():
     """
-    :return: funkcja zwraca tuplę z 4 elementami:
+    :return: funkcja zwraca tuplę z 4 elementami typu string:
     1- aktualna data
     2- data z pierwszym dniem aktualnego miesiąca
     3- data z pierwszym dniam poprzedniego miesiąca
@@ -50,7 +51,16 @@ print(get_date()[1])
 
 
 # Liczba słów kluczowych w TOP3 TOP10 TOP50
-
 api_senuto.get_domain_statistics(domain)
+
+# Wyciągnięcie 3 najważniejszych konkurendów z Senuto
 api_senuto.get_top_competitors(domain, 4)
+
+# api_senuto.get_incresed_pocitions_keywords_export(domain, "data")
+# api_senuto.get_decresed_pocitions_keywords_export(domain, "data")
+# api_senuto.get_important_keywords_export(domain, "data")
+
+# tak się tworzy listę fraz które wypadły z TOP 10 od 1 dnia ostatniego miesiąca do dzisiaj
+# żeby stworzyć listę fraz, które wpadły do top 10 wystarczy zamienić daty miejscami.
+api_senuto.get_range_compare_export(domain, "data", get_date()[2], get_date()[0])
 

@@ -23,9 +23,13 @@ urls = {
 
 exports = {
     "getDomainKeywords":
-        "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getImportantKeywords",
+    "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getImportantKeywords",
     "getKeywordsWithDecreasedPositions":
-        "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getKeywordsWithDecreasedPositions",
+    "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getKeywordsWithDecreasedPositions",
+    "getKeywordsWithIncreasedPositions":
+    "https://api.senuto.com/api/visibility_analysis/reports/exports/domain_keywords/getKeywordsWithIncreasedPositions",
+    "rangeCompare":
+    "https://api.senuto.com/api/visibility_analysis/tools/exports/range_compare/getData"
 }
 
 
@@ -66,6 +70,52 @@ def get_important_keywords_export(domain, file_path):
     url = text['data']['downloadUrl']
     download = requests.get(url)
     with open(f'{file_path}/{domain}_keywords.xlsx', 'wb') as fh:
+        fh.write(download.content)
+
+
+def get_incresed_pocitions_keywords_export(domain, file_path):
+    data = requests.post(exports['getKeywordsWithIncreasedPositions'], headers=header,
+                         data={'domain': domain, "fetch_mode": "subdomain"})
+    text = json.loads(data.text)
+    url = text['data']['downloadUrl']
+    download = requests.get(url)
+    with open(f'{file_path}/{domain}_increased_keywords.xlsx', 'wb') as fh:
+        fh.write(download.content)
+
+
+def get_decresed_pocitions_keywords_export(domain, file_path):
+    data = requests.post(exports['getKeywordsWithDecreasedPositions'], headers=header,
+                         data={'domain': domain, "fetch_mode": "subdomain"})
+    text = json.loads(data.text)
+    url = text['data']['downloadUrl']
+    download = requests.get(url)
+    with open(f'{file_path}/{domain}_decreased_keywords.xlsx', 'wb') as fh:
+        fh.write(download.content)
+
+
+def get_range_compare_export(domain, file_path, date_min, date_max):
+    ### jest konflikt między obiektem json a zagnieżdżonym słownikiem w pythonie- stąd taka konwersja
+    json_data = {'domain': domain,
+                 "date_min": date_min,
+                 "range_min_pos": {
+                    "range": [1, 10],
+                    "gte": 1,
+                    "lte": 10
+                 },
+                 "date_max": date_max,
+                 "range_max_pos": {
+                     "range": [11, 50],
+                     "gte": 11,
+                     "lte": 50
+                 },
+                 }
+    data = requests.post(exports['rangeCompare'], headers=header,
+                         data=json.dumps(json_data))
+    text = json.loads(data.text)
+    print(text)
+    url = text['data']['downloadUrl']
+    download = requests.get(url)
+    with open(f'{file_path}/{domain}_compare_keywords.xlsx', 'wb') as fh:
         fh.write(download.content)
 
 
