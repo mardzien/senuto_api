@@ -215,25 +215,23 @@ def get_keywords_with_decreased_positions(domain, dates: list, limit=10):
 
 def get_keywords_with_increased_positions(domain, limit=10):
     keywords_with_increased_positions = requests.post(urls['getKeywordsWithIncreasedPositions'], headers=header,
-                                                     data={"domain": domain, "fetch_mode": "topLevelDomain",
-                                                             "limit": 50})
+                                                      data={"domain": domain, "fetch_mode": "topLevelDomain",
+                                                            "limit": 50})
     keywords_data = json.loads(keywords_with_increased_positions.text)
 
     return keywords_data
 
 
-
-
-def get_positions_history_chart_data(domain, date_min, date_max, competitors=[]):
+def get_positions_history_chart_data(domain, date_min, date_max, competitors=""):
     positions_history = requests.get(urls['getPositionsHistoryChartData'], headers=header,
                                      params={"domain": domain, "fetch_mode": "subdomain", "competitors": competitors,
                                              "date_min": date_min, "date_max": date_max, "date_interval": "weekly"})
 
     positions_history_data = json.loads(positions_history.text)
-    ####################
+    positions_history = positions_history_data['data'][0]['data']
     ### Tutaj format daty w jsonie jest taki, że nie wiem jak wyciągnąć dane z dokładnej daty.
     ####################
-    return positions_history_data
+    return positions_history
 
 
 def get_keyword_statistics(keyword):

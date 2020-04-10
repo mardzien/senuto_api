@@ -3,20 +3,17 @@ Input: domena.pl
 
 Output:
 
-Liczba słów kluczowych w TOP3 TOP10 TOP50
-
-Najważniejsi konkurenci, na podstawie wspólnych słów kluczowych to:
-
-Słowa kluczowe, które dają najwięcej ruchu:
-
-W stosunku do poprzedniego roku: (jak się zmieniła liczba słów w TOP3, TOP10, TOP50): Słowa kluczowe, na których warto się skupić to: (słowa z pozycji 11-15):
-
-Słowa kluczowe, które weszły do TOP10 w ostatnim miesiącu to:
-
-Słowa kluczowe, które wypadły z TOP10 to:
+1. Liczba słów kluczowych w TOP3 TOP10 TOP50
+2. Najważniejsi konkurenci, na podstawie wspólnych słów kluczowych to:
+3. Słowa kluczowe, które dają najwięcej ruchu:
+4. W stosunku do poprzedniego roku: (jak się zmieniła liczba słów w TOP3, TOP10, TOP50):
+5. Słowa kluczowe, na których warto się skupić to: (słowa z pozycji 11-15):
+6. Słowa kluczowe, które weszły do TOP10 w ostatnim miesiącu to:
+7. Słowa kluczowe, które wypadły z TOP10 to:
 """
 import api_senuto
 import datetime
+import requests
 import pandas
 
 
@@ -62,5 +59,6 @@ api_senuto.get_top_competitors(domain, 4)
 
 # tak się tworzy listę fraz które wypadły z TOP 10 od 1 dnia ostatniego miesiąca do dzisiaj
 # żeby stworzyć listę fraz, które wpadły do top 10 wystarczy zamienić daty miejscami.
-api_senuto.get_range_compare_export(domain, "data", get_date()[2], get_date()[0])
-
+# api_senuto.get_range_compare_export(domain, "data", get_date()[2], get_date()[0])
+print(get_date()[3], get_date()[0])
+print(api_senuto.get_positions_history_chart_data("medjol.pl", get_date()[3], get_date()[0]))
