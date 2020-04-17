@@ -51,6 +51,9 @@ def get_domain_statistics(domain, fetch_mode="subdomain"):
     return statistics_dict
 
 
+print(get_domain_statistics("medjol.pl"))
+
+
 def get_top_competitors(domain, number_of_competitors=10):
     competitors = requests.post(urls['getTopCompetitors'], headers=header,
                                 data={"fetch_mode": "subdomain", "domain": domain, "limit": number_of_competitors})
@@ -109,13 +112,20 @@ def get_range_compare_export(domain, file_path, date_min, date_max):
                      "lte": 50
                  },
                  }
+
+    sorted_data = sorted([date_min, date_max])
+    if sorted_data[0] == date_min:
+        compare = "decreased"
+    else:
+        compare = "increased"
+
     data = requests.post(exports['rangeCompare'], headers=header,
                          data=json.dumps(json_data))
     text = json.loads(data.text)
     print(text)
     url = text['data']['downloadUrl']
     download = requests.get(url)
-    with open(f'{file_path}/{domain}_compare_keywords.xlsx', 'wb') as fh:
+    with open(f'{file_path}/{domain}_{compare}_keywords.xlsx', 'wb') as fh:
         fh.write(download.content)
 
 

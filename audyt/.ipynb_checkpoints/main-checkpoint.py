@@ -16,7 +16,6 @@ import datetime
 import requests
 import pandas as pd
 import openpyxl
-import xlsxwriter
 
 
 domain = "medjol.pl"
@@ -46,7 +45,7 @@ def get_date():
     return today, this_month_date, last_month_date, last_year_date
 
 
-print(sorted(get_date()))
+print(get_date()[1])
 
 
 # Liczba słów kluczowych w TOP3 TOP10 TOP50
@@ -62,33 +61,15 @@ api_senuto.get_top_competitors(domain, 4)
 # tak się tworzy listę fraz które wypadły z TOP 10 od 1 dnia ostatniego miesiąca do dzisiaj
 # żeby stworzyć listę fraz, które wpadły do top 10 wystarczy zamienić daty miejscami.
 # api_senuto.get_range_compare_export(domain, "data", get_date()[2], get_date()[0])
-# api_senuto.get_range_compare_export(domain, "data", get_date()[0], get_date()[2])
 # print(get_date()[3], get_date()[0])
 # print(api_senuto.get_positions_history_chart_data("medjol.pl", get_date()[3], get_date()[0]))
 
 
 def generate_audit(domain):
-    ### podstawowe dane domeny
-    df_1 = pd.DataFrame(api_senuto.get_domain_statistics(domain), index=[0])
-    df_1.set_index(['domain'], inplace=True)
+    df_1 = pd.DataFrame(api_senuto.get_domain_statistics(domain))
     writer = pd.ExcelWriter('audit.xlsx', engine='xlsxwriter')
     df_1.to_excel(writer, sheet_name='Podstawowe informacje')
-    df_2 = pd.DataFrame(api_senuto.get_top_competitors(domain, 4))
-    df_2.to_excel(writer, sheet_name='Konkurencja')
-    df_keywords = pd.read_excel(f'data/{domain}_keywords.xlsx')
-    df_3 = df_keywords.head(50)
-    df_3.set_index(['Słowo kluczowe'], inplace=True)
-    df_3.to_excel(writer, sheet_name='Frazy dające najwięcej ruchu')
-    df_4 = df_keywords[(df_keywords['Pozycja dziś'] > 10) & (df_keywords['Pozycja dziś'] < 16)]
-    df_4.set_index(['Słowo kluczowe'], inplace=True)
-    df_4.to_excel(writer, sheet_name='Frazy na pozycji 11-15')
-    df_5 = pd.read_excel(f'data/{domain}_decreased_keywords.xlsx')
-    df_5.set_index(['Słowo kluczowe'], inplace=True)
-    df_5.to_excel(writer, sheet_name='Wypadły z TOP10')
-    df_6 = pd.read_excel(f'data/{domain}_increased_keywords.xlsx')
-    df_6.set_index(['Słowo kluczowe'], inplace=True)
-    df_6.to_excel(writer, sheet_name='Wpadły do TOP10')
-
     writer.save()
+
 
 generate_audit('medjol.pl')
