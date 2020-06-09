@@ -69,6 +69,7 @@ api_senuto.get_top_competitors(domain, 4)
 
 def generate_audit(domain):
     ### podstawowe dane domeny
+    
     df_1 = pd.DataFrame(api_senuto.get_domain_statistics(domain), index=[0])
     df_1.set_index(['domain'], inplace=True)
     writer = pd.ExcelWriter('audit.xlsx', engine='xlsxwriter')
@@ -91,4 +92,5 @@ def generate_audit(domain):
 
     writer.save()
 
-generate_audit('medjol.pl')
+
+generate_audit('winkhaus.pl')

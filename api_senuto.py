@@ -19,6 +19,8 @@ urls = {
         "https://api.senuto.com/api/visibility_analysis/reports/domain_keywords/getKeywordsWithIncreasedPositions",
     "getKeywordStatistics":
         "https://api.senuto.com/api/keywords_analysis/reports/keyword_details/getStatistics",
+    "getKeywordsPropositions":
+        "https://api.senuto.com/api/keywords_analysis/reports/keyword_details/getKeywordsPropositions"
 }
 
 exports = {
@@ -49,9 +51,6 @@ def get_domain_statistics(domain, fetch_mode="subdomain"):
         value = domain_data['data']['statistics'][element]['recent_value']
         statistics_dict[element] = value
     return statistics_dict
-
-
-print(get_domain_statistics("medjol.pl"))
 
 
 def get_top_competitors(domain, number_of_competitors=10):
@@ -129,49 +128,6 @@ def get_range_compare_export(domain, file_path, date_min, date_max):
         fh.write(download.content)
 
 
-def get_important_keywords(domain, limit=11436):
-    accumulated_data = []
-    page_index = 1
-    while True:
-        important_keywords = requests.post(urls['getImportantKeywords'], headers=header,
-                                           data={'domain': domain, "fetch_mode": "subdomain",
-                                                 'limit': limit, 'page': page_index})
-        keywords_data = json.loads(important_keywords.text)
-        # print(keywords_data)
-        try:
-            accumulated_data.extend(keywords_data['data'])
-        except KeyError as exc:
-            print(f"""Problem with extracting data for {urls['getImportantKeywords']}.
-                  Domain: {domain}, page index: {page_index}""")
-            raise exc
-        # break
-        if keywords_data.get('pagination', {}).get('has_next_page'):
-            page_index += 1
-        # elif keywords_data.get('pagination', {}).get('page_count') == page_index:
-        #     break
-        else:
-            break
-    print("Data loaded")
-    # return accumulated_data
-    # post processing of server data
-    # print(accumulated_data)
-    result = []
-    for data in accumulated_data:
-        # if 1 <= data["last_position"] <= 10:
-        processed_dict = {
-            "keyword": data["keyword"],
-            "url": data["url"],
-            "searches": data["searches"],
-            "last_position": data["last_position"],
-            "position_yesterday": data["position_yesterday"],
-        }
-        result.append(processed_dict)
-    print(processed_dict)
-    
-
-# get_important_keywords('izielnik.pl')
-
-
 # błędna metoda w dokumentacji! jest get, zamiast post
 def get_keywords_with_decreased_positions(domain, dates: list, limit=10):
     """
@@ -232,16 +188,35 @@ def get_keywords_with_increased_positions(domain, limit=10):
     return keywords_data
 
 
-def get_positions_history_chart_data(domain, date_min, date_max, competitors=""):
-    positions_history = requests.get(urls['getPositionsHistoryChartData'], headers=header,
-                                     params={"domain": domain, "fetch_mode": "subdomain", "competitors": competitors,
-                                             "date_min": date_min, "date_max": date_max, "date_interval": "weekly"})
+def get_positions_history_chart_data2(domain, date_min, date_max, competitors,
+                                      feth_mode='subdomain', interval='weekly'):
+    url_params = f'?domain{domain}'
+    for competitor in competitors:
+        url_params += f'&competitors%5B%5D={competitor}'
+    url_params += f'&fetch_mode={feth_mode}'
+    url_params += f'&date_min={date_min}'
+    url_params += f'&date_max={date_max}'
+    url_params += f'&&date_interval={interval}'
 
-    positions_history_data = json.loads(positions_history.text)
-    positions_history = positions_history_data['data'][0]['data']
+    positions_history = requests.get(urls['getPositionsHistoryChartData']+url_params, headers=header, params={"domain": domain})
+    position_history_data = json.loads(positions_history.text)
+    print(position_history_data)
+    position_history = position_history_data['data'][0]['data']
     ### Tutaj format daty w jsonie jest taki, że nie wiem jak wyciągnąć dane z dokładnej daty.
     ####################
-    return positions_history
+    return position_history
+
+
+def get_positions_history_chart_data(domain, date_min, date_max):
+    raw_data = {"domain": domain,
+                "date_interval": "weekly",
+                "fetch_mode": "subdomain",
+                "date_min": date_min,
+                "date_max": date_max, }
+    positions_history = requests.get(urls['getPositionsHistoryChartData'], headers=header, params=raw_data, )
+    position_history_data = json.loads(positions_history.text)
+    position_history = position_history_data['data'][0]['data']
+    return position_history
 
 
 def get_keyword_statistics(keyword):
@@ -256,3 +231,19 @@ def get_keyword_statistics(keyword):
     except:
         keyword_dict["searches"] = 0
     return keyword_dict
+
+
+def get_keyword_propositions(keyword, country_id=1):
+    keyword_propositions_response = requests.post(urls['getKeywordsPropositions'], headers=header,
+                                                  data={"keyword": keyword, "country_id": country_id})
+
+    keyword_propositions_data = json.loads(keyword_propositions_response.text)
+
+    try:
+        proposition = keyword_propositions_data['data'][0]['keyword']
+        searches = keyword_propositions_data['data'][0]['searches']
+    except:
+        proposition = 'brak propozycji'
+        searches = 0
+
+    return [keyword, proposition, searches]
