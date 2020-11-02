@@ -4,19 +4,17 @@ import time
 import xlrd
 import api_senuto
 
-file_path = ''
-
 
 def get_domains_from_file(file_name):
     """
     :param file_name: plik powinien zawierać nazwy domen- każda domena w nowej linii
     :return: lista domen
     """
-    domains = []
+    result = []
     with open(file_name, encoding="utf-8") as file:
         for line in file.read().splitlines():
-            domains.append(line)
-    return domains
+            result.append(line)
+    return result
 
 
 """funkcja zaimportowana z pliku api_senuto pobiera export z aplikacji senuto i zapisuje go do pliku excel
@@ -60,4 +58,6 @@ def create_full_report(file_path):
     print(f"Wygenerowano cały raport w czasie: {full_delta}")
 
 
-create_full_report(file_path)
+# domains = get_domains_from_file("Input/...")
+# get_multiple_important_keywords_export(domains=domains, file_path="data")
+# create_full_report(file_path="data")
