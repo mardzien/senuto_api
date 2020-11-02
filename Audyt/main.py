@@ -46,6 +46,8 @@ def get_date():
     return today, this_month_date, last_month_date, last_year_date
 
 
+print(get_date())
+
 # print(sorted(get_date()))
 
 
@@ -53,18 +55,16 @@ def get_date():
 
 
 # Wyciągnięcie 3 najważniejszych konkurendów z Senuto
-api_senuto.get_top_competitors(domain, 4)
 
-# api_senuto.get_incresed_pocitions_keywords_export(domain, "data")
-# api_senuto.get_decresed_pocitions_keywords_export(domain, "data")
-# api_senuto.get_important_keywords_export(domain, "data")
+def generate_audit_files(domain, file_path):
+    api_senuto.get_incresed_pocitions_keywords_export(domain, file_path)
+    api_senuto.get_decresed_pocitions_keywords_export(domain, file_path)
+    api_senuto.get_important_keywords_export(domain, file_path)
 
-# tak się tworzy listę fraz które wypadły z TOP 10 od 1 dnia ostatniego miesiąca do dzisiaj
-# żeby stworzyć listę fraz, które wpadły do top 10 wystarczy zamienić daty miejscami.
-# api_senuto.get_range_compare_export(domain, "data", get_date()[2], get_date()[0])
-# api_senuto.get_range_compare_export(domain, "data", get_date()[0], get_date()[2])
-# print(get_date()[3], get_date()[0])
-# print(api_senuto.get_positions_history_chart_data("medjol.pl", get_date()[3], get_date()[0]))
+    # tak się tworzy listę fraz które wypadły z TOP 10 od 1 dnia ostatniego miesiąca do dzisiaj
+    # żeby stworzyć listę fraz, które wpadły do TOP 10 wystarczy zamienić daty miejscami.
+    api_senuto.get_range_compare_export(domain, file_path, '2020-11-02', '2020-10-26')
+    api_senuto.get_range_compare_export(domain, file_path, '2020-10-26', '2020-11-02')
 
 
 def generate_audit(domain):
@@ -93,4 +93,5 @@ def generate_audit(domain):
     writer.save()
 
 
-generate_audit(domain)
+generate_audit_files("medjol.pl", "data")
+generate_audit("medjol.pl")
