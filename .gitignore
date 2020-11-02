@@ -1,5 +1,8 @@
-data
-venv
+Audyt/data
+Propositions/Input
+Propositions/Output
+Report/Input
+Report/Output
 user_data
 input
 output

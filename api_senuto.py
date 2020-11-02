@@ -35,6 +35,13 @@ exports = {
 }
 
 
+monitoring = {
+    "getCompetitorMatrix":
+        "https://api.senuto.com/api/ExcelReports/reportCompetitorsMatrix"
+
+}
+
+
 header = {
     "Authorization": f"Bearer {auth.get_token()}"
 }
@@ -121,7 +128,6 @@ def get_range_compare_export(domain, file_path, date_min, date_max):
     data = requests.post(exports['rangeCompare'], headers=header,
                          data=json.dumps(json_data))
     text = json.loads(data.text)
-    print(text)
     url = text['data']['downloadUrl']
     download = requests.get(url)
     with open(f'{file_path}/{domain}_{compare}_keywords.xlsx', 'wb') as fh:
@@ -188,25 +194,6 @@ def get_keywords_with_increased_positions(domain, limit=10):
     return keywords_data
 
 
-def get_positions_history_chart_data2(domain, date_min, date_max, competitors,
-                                      feth_mode='subdomain', interval='weekly'):
-    url_params = f'?domain{domain}'
-    for competitor in competitors:
-        url_params += f'&competitors%5B%5D={competitor}'
-    url_params += f'&fetch_mode={feth_mode}'
-    url_params += f'&date_min={date_min}'
-    url_params += f'&date_max={date_max}'
-    url_params += f'&&date_interval={interval}'
-
-    positions_history = requests.get(urls['getPositionsHistoryChartData']+url_params, headers=header, params={"domain": domain})
-    position_history_data = json.loads(positions_history.text)
-    print(position_history_data)
-    position_history = position_history_data['data'][0]['data']
-    ### Tutaj format daty w jsonie jest taki, że nie wiem jak wyciągnąć dane z dokładnej daty.
-    ####################
-    return position_history
-
-
 def get_positions_history_chart_data(domain, date_min, date_max):
     raw_data = {"domain": domain,
                 "date_interval": "weekly",
@@ -246,4 +233,46 @@ def get_keyword_propositions(keyword, country_id=1):
         proposition = 'brak propozycji'
         searches = 0
 
-    return [keyword, proposition, searches]
+    return keyword, proposition, searches
+
+
+def get_keyword_propositions2(keyword, country_id=1):
+    keyword_propositions_response = requests.post(urls['getKeywordsPropositions'], headers=header,
+                                                  data={"keyword": keyword, "country_id": country_id})
+    try:
+        keyword_propositions_data = json.loads(keyword_propositions_response.text)
+    except:
+        keyword_propositions_data = None
+    propositions = []
+    searches = []
+    for i in range(5):
+        try:
+            propositions.append(keyword_propositions_data['data'][i]['keyword'])
+            searches.append(keyword_propositions_data['data'][i]['searches'])
+        except:
+            propositions.append('brak propozycji')
+            searches.append(0)
+
+    return keyword, propositions[0], searches[0], propositions[1], searches[1], propositions[2], searches[2],\
+           propositions[3], searches[3], propositions[4], searches[4]
+
+
+def get_competitors_matrix(project_id, date_min, date_max, file_path):
+
+    json_data = {
+        "project_id": project_id,
+        "date_min": date_min,
+        "date_max": date_max,
+    }
+
+    data = requests.post(monitoring['getCompetitorMatrix'], headers=header,
+                         data=json.dumps(json_data))
+    text = json.loads(data.text)
+    print(text)
+    url = text['data']['downloadUrl']
+    download = requests.get(url)
+    with open(f'{file_path}/{date_min}-{date_max}_competitors_matrix.xlsx', 'wb') as fh:
+        fh.write(download.content)
+
+
+# get_competitors_matrix(35913, "2020-09-01", "2020-10-01", "VisibilityGenerator/Input")
