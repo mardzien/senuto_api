@@ -10,4 +10,4 @@ for file in files:
         print(text)
         df = df.append(pd.read_json(text))
 
-df.to_excel('Output/lista_produkty.xlsx')
+df.to_excel('Output/product_propositions.xlsx')
