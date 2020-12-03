@@ -60,7 +60,8 @@ domain_list = load_to_list('Input/domains.txt')
 def get_visibility_history(domains, date_min, date_max):
     result_df = pd.DataFrame()
     for domain in domains:
-        temp_df = pd.read_json(json.dumps(api_senuto.get_positions_history_chart_data(domain, date_min, date_max)))
+        temp_df = pd.read_json(json.dumps(api_senuto.get_positions_history_chart_data(domain, date_min, date_max,
+                                                                                      fetch_mode="topLevelDomain")))
         temp_df['domena'] = f"{domain}"
         temp_df.reset_index(inplace=True)
         temp_df.rename(columns={'index': 'data'}, inplace=True)
@@ -72,4 +73,5 @@ def get_visibility_history(domains, date_min, date_max):
     writer.save()
 
 
-get_visibility_history(domains=domain_list, date_min=get_date()[2], date_max=get_date()[0])
+print(domain_list)
+get_visibility_history(domains=domain_list, date_min="2020-11-02", date_max="2020-11-30")

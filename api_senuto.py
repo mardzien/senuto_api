@@ -185,19 +185,19 @@ def get_keywords_with_decreased_positions(domain, dates: list, limit=10):
 # print(len(zmienna))
 
 
-def get_keywords_with_increased_positions(domain, limit=10):
+def get_keywords_with_increased_positions(domain, fetch_mode="topLevelDomain",  limit=10):
     keywords_with_increased_positions = requests.post(urls['getKeywordsWithIncreasedPositions'], headers=header,
-                                                      data={"domain": domain, "fetch_mode": "topLevelDomain",
+                                                      data={"domain": domain, "fetch_mode": fetch_mode,
                                                             "limit": 50})
     keywords_data = json.loads(keywords_with_increased_positions.text)
 
     return keywords_data
 
 
-def get_positions_history_chart_data(domain, date_min, date_max):
+def get_positions_history_chart_data(domain, date_min, date_max, fetch_mode="subdomain"):
     raw_data = {"domain": domain,
                 "date_interval": "weekly",
-                "fetch_mode": "subdomain",
+                "fetch_mode": fetch_mode,
                 "date_min": date_min,
                 "date_max": date_max, }
     positions_history = requests.get(urls['getPositionsHistoryChartData'], headers=header, params=raw_data, )
@@ -273,6 +273,3 @@ def get_competitors_matrix(project_id, date_min, date_max, file_path):
     download = requests.get(url)
     with open(f'{file_path}/{date_min}-{date_max}_competitors_matrix.xlsx', 'wb') as fh:
         fh.write(download.content)
-
-
-# get_competitors_matrix(35913, "2020-09-01", "2020-10-01", "VisibilityGenerator/Input")
